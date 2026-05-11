@@ -76,6 +76,7 @@ The implementation is split into reusable layers:
 - `EvaluationRunner`: multi-target benchmark runner
 - `ContextoSolver`: word-game wrapper over the generic solver
 - `rgsn.web`: FastAPI web UI for manual and simulated sessions
+- `NumpyCandidateIndex`: vectorized scorer/ranker for large candidate stores
 
 ---
 

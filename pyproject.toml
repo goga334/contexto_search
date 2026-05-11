@@ -5,6 +5,7 @@ description = "Rank-guided semantic search experiments with weak ordinal feedbac
 requires-python = ">=3.10"
 dependencies = [
     "fastapi>=0.110",
+    "numpy>=2.0",
     "uvicorn>=0.27",
 ]
 

@@ -4,6 +4,7 @@ from rgsn.contexto import ContextoSolver
 from rgsn.dictionary import DictionaryCoverage, WordDictionary
 from rgsn.direction import RankDirectionLearner
 from rgsn.evaluation import EvaluationCaseResult, EvaluationRunner, EvaluationSummary
+from rgsn.index import NumpyCandidateIndex
 from rgsn.machine import RankGuidedSearchMachine
 from rgsn.oracle import SimilarityRankOracle
 from rgsn.solver import SimulationTrace, WeakFeedbackSolver
@@ -24,6 +25,7 @@ __all__ = [
     "PairwiseConstraintBuilder",
     "RankDirectionLearner",
     "RankGuidedSearchMachine",
+    "NumpyCandidateIndex",
     "ScoredCandidate",
     "SimilarityRankOracle",
     "SimulationTrace",

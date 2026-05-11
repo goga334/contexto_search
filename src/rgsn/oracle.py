@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from rgsn.index import NumpyCandidateIndex
 from rgsn.store import CandidateStore
 from rgsn.types import Candidate
-from rgsn.vectors import cosine
 
 
 @dataclass(slots=True)
@@ -17,14 +17,8 @@ class SimilarityRankOracle:
     _ranks: dict[str, int] = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
-        target = self.store.get(self.target_id)
-        scored = [
-            (candidate.id, cosine(candidate.embedding, target.embedding))
-            for candidate in self.store.values()
-        ]
-        scored.sort(key=lambda item: (-item[1], item[0]))
-        self._ranking = [candidate_id for candidate_id, _ in scored]
-        self._ranks = {candidate_id: index + 1 for index, candidate_id in enumerate(self._ranking)}
+        self.store.get(self.target_id)
+        self._ranking, self._ranks = NumpyCandidateIndex.from_store(self.store).rank_oracle(self.target_id)
 
     @property
     def target(self) -> Candidate:

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import gzip
 from collections.abc import Iterable, Mapping, Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Container
+from typing import Any, Callable, Container, Iterator, TextIO
 
 from rgsn.types import Candidate
 from rgsn.vectors import Vector, normalize
@@ -65,7 +67,7 @@ class CandidateStore:
 
         source = Path(path)
         embeddings: dict[str, Vector] = {}
-        with source.open("r", encoding=encoding) as handle:
+        with _open_text(source, encoding=encoding) as handle:
             first_line = handle.readline()
             inferred_skip = _looks_like_vector_header(first_line)
             should_skip_first = inferred_skip if skip_header is None else skip_header
@@ -113,6 +115,16 @@ def _looks_like_vector_header(line: str) -> bool:
     if len(parts) != 2:
         return False
     return all(part.isdigit() for part in parts)
+
+
+@contextmanager
+def _open_text(path: Path, *, encoding: str) -> Iterator[TextIO]:
+    if path.suffix == ".gz":
+        with gzip.open(path, mode="rt", encoding=encoding) as handle:
+            yield handle
+    else:
+        with path.open("r", encoding=encoding) as handle:
+            yield handle
 
 
 def _parse_vector_line(

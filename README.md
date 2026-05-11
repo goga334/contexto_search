@@ -86,3 +86,10 @@ For a real-sized run, replace the fixture paths:
 ```bash
 contexto-ui --embeddings data/wiki-news.vec --dictionary data/allowed_words.txt --port 8765
 ```
+
+One practical GloVe setup:
+
+```bash
+python scripts/build_alpha_dictionary.py data/glove-wiki-gigaword-50.gz data/glove_ascii_words.txt
+contexto-ui --embeddings data/glove-wiki-gigaword-50.gz --dictionary data/glove_ascii_words.txt --port 8765
+```

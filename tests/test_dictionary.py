@@ -1,4 +1,5 @@
 from pathlib import Path
+import gzip
 
 from rgsn import CandidateStore, ContextoSolver, WordDictionary
 
@@ -56,3 +57,13 @@ def test_candidate_store_stream_filter_handles_large_embedding_files(tmp_path: P
     assert len(store.candidates) == 250
     assert "word0000" in store.candidates
     assert "word0001" not in store.candidates
+
+
+def test_candidate_store_loads_gzip_text_vectors(tmp_path: Path) -> None:
+    path = tmp_path / "words.vec.gz"
+    with gzip.open(path, mode="wt", encoding="utf-8") as handle:
+        handle.write("3 2\nalpha 1.0 0.0\nbeta 0.0 1.0\ngamma 0.5 0.5\n")
+
+    store = CandidateStore.from_text_file(path, allowed_ids={"alpha", "gamma"})
+
+    assert sorted(store.candidates) == ["alpha", "gamma"]

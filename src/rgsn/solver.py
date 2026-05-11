@@ -6,6 +6,7 @@ from typing import Any
 from rgsn.acquisition import AcquisitionConfig
 from rgsn.constraints import PairwiseConstraintBuilder
 from rgsn.direction import RankDirectionLearner
+from rgsn.index import NumpyCandidateIndex
 from rgsn.machine import RankGuidedSearchMachine
 from rgsn.oracle import SimilarityRankOracle
 from rgsn.store import CandidateStore
@@ -30,6 +31,7 @@ class WeakFeedbackSolver:
         learner: RankDirectionLearner | None = None,
         acquisition: AcquisitionConfig | None = None,
         constraint_builder: PairwiseConstraintBuilder | None = None,
+        use_index: bool = True,
     ) -> None:
         self.store = store
         self.machine = RankGuidedSearchMachine(
@@ -38,6 +40,7 @@ class WeakFeedbackSolver:
             acquisition=acquisition,
             constraint_builder=constraint_builder,
         )
+        self.index = NumpyCandidateIndex.from_store(store) if use_index else None
 
     @property
     def observations(self) -> list[FeedbackObservation]:
@@ -47,6 +50,14 @@ class WeakFeedbackSolver:
         return self.machine.observe(candidate_id, rank, metadata=metadata)
 
     def propose(self, k: int = 10, *, include_seen: bool = False) -> list[ScoredCandidate]:
+        if self.index is not None:
+            return self.index.score_candidates(
+                observations=self.machine.observations,
+                direction=self.machine.direction(),
+                config=self.machine.acquisition,
+                k=k,
+                include_seen=include_seen,
+            )
         return self.machine.propose(k=k, include_seen=include_seen)
 
     def best_observation(self) -> FeedbackObservation | None:
