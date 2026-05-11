@@ -1,6 +1,7 @@
 from rgsn.acquisition import AcquisitionConfig
 from rgsn.constraints import PairwiseConstraintBuilder
 from rgsn.contexto import ContextoSolver
+from rgsn.dictionary import DictionaryCoverage, WordDictionary
 from rgsn.direction import RankDirectionLearner
 from rgsn.evaluation import EvaluationCaseResult, EvaluationRunner, EvaluationSummary
 from rgsn.machine import RankGuidedSearchMachine
@@ -14,6 +15,7 @@ __all__ = [
     "Candidate",
     "CandidateStore",
     "ContextoSolver",
+    "DictionaryCoverage",
     "EvaluationCaseResult",
     "EvaluationRunner",
     "EvaluationSummary",
@@ -26,4 +28,5 @@ __all__ = [
     "SimilarityRankOracle",
     "SimulationTrace",
     "WeakFeedbackSolver",
+    "WordDictionary",
 ]

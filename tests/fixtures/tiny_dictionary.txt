@@ -1,0 +1,9 @@
+# allowed Contexto-style guesses for fixture tests
+river
+stream
+water
+lake
+tree
+forest
+road
+city

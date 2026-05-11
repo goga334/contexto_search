@@ -55,10 +55,19 @@ summary = solver.evaluate(
 print(summary.to_dict())
 ```
 
+To restrict guesses to an allowed word list:
+
+```python
+solver = ContextoSolver.from_embedding_file(
+    "data/words.vec",
+    dictionary_path="data/allowed_words.txt",
+)
+```
+
 ## Local Web UI
 
 ```bash
-contexto-ui --embeddings tests/fixtures/tiny_words.vec --port 8765
+contexto-ui --embeddings tests/fixtures/tiny_words.vec --dictionary tests/fixtures/tiny_dictionary.txt --port 8765
 ```
 
 During local source development:

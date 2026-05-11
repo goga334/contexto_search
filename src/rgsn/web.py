@@ -10,6 +10,7 @@ from fastapi.responses import HTMLResponse
 import uvicorn
 
 from rgsn.contexto import ContextoSolver
+from rgsn.dictionary import WordDictionary
 from rgsn.oracle import SimilarityRankOracle
 from rgsn.solver import WeakFeedbackSolver
 from rgsn.store import CandidateStore
@@ -127,9 +128,19 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", default=8765, type=int)
     parser.add_argument("--max-words", default=None, type=int)
+    parser.add_argument("--dictionary", default=None, type=Path, help="Optional allowed-word dictionary file.")
+    parser.add_argument("--min-word-length", default=2, type=int)
+    parser.add_argument("--max-word-length", default=None, type=int)
     args = parser.parse_args(argv)
 
     store = CandidateStore.from_text_file(args.embeddings, lowercase_ids=True, max_items=args.max_words)
+    if args.dictionary is not None:
+        dictionary = WordDictionary.from_text_file(
+            args.dictionary,
+            min_length=args.min_word_length,
+            max_length=args.max_word_length,
+        )
+        store = dictionary.filter_store(store)
     run_server(store=store, host=args.host, port=args.port)
 
 

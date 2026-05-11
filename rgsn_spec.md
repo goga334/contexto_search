@@ -69,6 +69,7 @@ User -> Candidate -> Feedback -> Constraints -> Direction -> Next candidate
 The implementation is split into reusable layers:
 
 - `CandidateStore`: owns any vectorized search space, not only words
+- `WordDictionary`: optional word-domain filter for allowed guesses
 - `RankGuidedSearchMachine`: converts feedback into constraints and proposals
 - `WeakFeedbackSolver`: domain-neutral session facade
 - `SimilarityRankOracle`: offline hidden-target simulator

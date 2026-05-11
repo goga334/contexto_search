@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from rgsn.dictionary import WordDictionary
 from rgsn.evaluation import EvaluationRunner, EvaluationSummary
 from rgsn.oracle import SimilarityRankOracle
 from rgsn.solver import SimulationTrace, WeakFeedbackSolver
@@ -21,14 +22,27 @@ class ContextoSolver:
         cls,
         path: str | Path,
         *,
+        dictionary_path: str | Path | None = None,
         lowercase_words: bool = True,
         max_words: int | None = None,
+        min_word_length: int | None = 2,
+        max_word_length: int | None = None,
+        alpha_only: bool = True,
     ) -> ContextoSolver:
         store = CandidateStore.from_text_file(
             path,
             lowercase_ids=lowercase_words,
             max_items=max_words,
         )
+        if dictionary_path is not None:
+            dictionary = WordDictionary.from_text_file(
+                dictionary_path,
+                lowercase=lowercase_words,
+                alpha_only=alpha_only,
+                min_length=min_word_length,
+                max_length=max_word_length,
+            )
+            store = dictionary.filter_store(store)
         return cls(store)
 
     def observe(self, word: str, rank: float) -> FeedbackObservation:

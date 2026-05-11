@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from rgsn.types import Candidate
 from rgsn.vectors import Vector, normalize
@@ -96,6 +96,15 @@ class CandidateStore:
 
     def subset(self, candidate_ids: Iterable[str]) -> CandidateStore:
         return CandidateStore({candidate_id: self.get(candidate_id) for candidate_id in candidate_ids})
+
+    def filter(self, predicate: Callable[[Candidate], bool]) -> CandidateStore:
+        return CandidateStore(
+            {
+                candidate.id: candidate
+                for candidate in self.candidates.values()
+                if predicate(candidate)
+            }
+        )
 
 
 def _looks_like_vector_header(line: str) -> bool:
