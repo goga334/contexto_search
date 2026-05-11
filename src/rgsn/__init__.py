@@ -2,6 +2,7 @@ from rgsn.acquisition import AcquisitionConfig
 from rgsn.constraints import PairwiseConstraintBuilder
 from rgsn.contexto import ContextoSolver
 from rgsn.direction import RankDirectionLearner
+from rgsn.evaluation import EvaluationCaseResult, EvaluationRunner, EvaluationSummary
 from rgsn.machine import RankGuidedSearchMachine
 from rgsn.oracle import SimilarityRankOracle
 from rgsn.solver import SimulationTrace, WeakFeedbackSolver
@@ -13,6 +14,9 @@ __all__ = [
     "Candidate",
     "CandidateStore",
     "ContextoSolver",
+    "EvaluationCaseResult",
+    "EvaluationRunner",
+    "EvaluationSummary",
     "FeedbackObservation",
     "PairwiseConstraint",
     "PairwiseConstraintBuilder",

@@ -44,3 +44,28 @@ The word solver is a thin wrapper over the reusable vector search components:
 - `CandidateStore`: stores any vectorized search space.
 - `WeakFeedbackSolver`: observes weak ordinal feedback and proposes candidates.
 - `SimilarityRankOracle`: simulates hidden-target games for offline evaluation.
+- `EvaluationRunner`: runs many hidden-target simulations and aggregates metrics.
+
+```python
+summary = solver.evaluate(
+    ["river", "forest", "city"],
+    budget=30,
+    seed_words=["road", "water", "tree"],
+)
+print(summary.to_dict())
+```
+
+## Local Web UI
+
+```bash
+contexto-ui --embeddings tests/fixtures/tiny_words.vec --port 8765
+```
+
+During local source development:
+
+```bash
+$env:PYTHONPATH="src"
+python -m rgsn.web --embeddings tests/fixtures/tiny_words.vec --port 8765
+```
+
+Open `http://127.0.0.1:8765`.

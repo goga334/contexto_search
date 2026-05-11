@@ -72,7 +72,9 @@ The implementation is split into reusable layers:
 - `RankGuidedSearchMachine`: converts feedback into constraints and proposals
 - `WeakFeedbackSolver`: domain-neutral session facade
 - `SimilarityRankOracle`: offline hidden-target simulator
+- `EvaluationRunner`: multi-target benchmark runner
 - `ContextoSolver`: word-game wrapper over the generic solver
+- `rgsn.web`: FastAPI web UI for manual and simulated sessions
 
 ---
 

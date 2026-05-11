@@ -3,7 +3,13 @@ name = "contexto-search"
 version = "0.1.0"
 description = "Rank-guided semantic search experiments with weak ordinal feedback."
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn>=0.27",
+]
+
+[project.scripts]
+contexto-ui = "rgsn.web:main"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

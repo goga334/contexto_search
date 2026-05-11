@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from rgsn.evaluation import EvaluationRunner, EvaluationSummary
 from rgsn.oracle import SimilarityRankOracle
 from rgsn.solver import SimulationTrace, WeakFeedbackSolver
 from rgsn.store import CandidateStore
@@ -40,3 +41,16 @@ class ContextoSolver:
         oracle = SimilarityRankOracle(self.store, target_word.lower())
         seeds = [word.lower() for word in seed_words] if seed_words is not None else None
         return self.solver.simulate(oracle, budget=budget, seed_ids=seeds)
+
+    def evaluate(
+        self,
+        target_words: list[str],
+        *,
+        budget: int = 25,
+        stop_rank: int = 1,
+        seed_words: list[str] | None = None,
+    ) -> EvaluationSummary:
+        runner = EvaluationRunner(self.store)
+        targets = [word.lower() for word in target_words]
+        seeds = [word.lower() for word in seed_words] if seed_words is not None else None
+        return runner.run(targets, budget=budget, stop_rank=stop_rank, seed_ids=seeds)
