@@ -43,3 +43,12 @@ def test_contexto_solver_wraps_word_search() -> None:
 
     assert suggestions
     assert suggestions[0].candidate.id in {"river", "stream", "lake", "boat"}
+
+
+def test_contexto_solver_stream_filters_embeddings_with_dictionary() -> None:
+    dictionary = Path(__file__).parent / "fixtures" / "tiny_dictionary.txt"
+
+    solver = ContextoSolver.from_embedding_file(FIXTURE, dictionary_path=dictionary)
+
+    assert len(solver.store.candidates) == 8
+    assert "boat" not in solver.store.candidates

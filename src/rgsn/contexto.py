@@ -29,11 +29,6 @@ class ContextoSolver:
         max_word_length: int | None = None,
         alpha_only: bool = True,
     ) -> ContextoSolver:
-        store = CandidateStore.from_text_file(
-            path,
-            lowercase_ids=lowercase_words,
-            max_items=max_words,
-        )
         if dictionary_path is not None:
             dictionary = WordDictionary.from_text_file(
                 dictionary_path,
@@ -42,7 +37,18 @@ class ContextoSolver:
                 min_length=min_word_length,
                 max_length=max_word_length,
             )
-            store = dictionary.filter_store(store)
+            store = CandidateStore.from_text_file(
+                path,
+                lowercase_ids=lowercase_words,
+                max_items=max_words,
+                allowed_ids=dictionary.words,
+            )
+        else:
+            store = CandidateStore.from_text_file(
+                path,
+                lowercase_ids=lowercase_words,
+                max_items=max_words,
+            )
         return cls(store)
 
     def observe(self, word: str, rank: float) -> FeedbackObservation:

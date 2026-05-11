@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -21,10 +21,11 @@ from rgsn.types import FeedbackObservation, ScoredCandidate
 class WebSession:
     store: CandidateStore
     solver: ContextoSolver
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
-    def from_store(cls, store: CandidateStore) -> WebSession:
-        return cls(store=store, solver=ContextoSolver(store))
+    def from_store(cls, store: CandidateStore, *, metadata: dict[str, Any] | None = None) -> WebSession:
+        return cls(store=store, solver=ContextoSolver(store), metadata=metadata or {})
 
     def reset(self) -> dict[str, Any]:
         self.solver = ContextoSolver(self.store)
@@ -39,6 +40,7 @@ class WebSession:
         best = self.solver.solver.best_observation()
         return {
             "candidate_count": len(self.store.candidates),
+            "metadata": dict(self.metadata),
             "observation_count": len(observations),
             "constraint_count": len(self.solver.solver.machine.constraints()),
             "has_direction": self.solver.solver.machine.direction() is not None,
@@ -76,15 +78,16 @@ def run_server(
     store: CandidateStore,
     host: str = "127.0.0.1",
     port: int = 8765,
+    metadata: dict[str, Any] | None = None,
 ) -> None:
-    app = create_app(store)
+    app = create_app(store, metadata=metadata)
     print(f"RGSN web UI listening at http://{host}:{port}")
     uvicorn.run(app, host=host, port=port, log_level="info")
 
 
-def create_app(store: CandidateStore) -> FastAPI:
+def create_app(store: CandidateStore, *, metadata: dict[str, Any] | None = None) -> FastAPI:
     app = FastAPI(title="RGSN Contexto Lab")
-    session = WebSession.from_store(store)
+    session = WebSession.from_store(store, metadata=metadata)
 
     @app.get("/", response_class=HTMLResponse)
     def index() -> str:
@@ -133,15 +136,28 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--max-word-length", default=None, type=int)
     args = parser.parse_args(argv)
 
-    store = CandidateStore.from_text_file(args.embeddings, lowercase_ids=True, max_items=args.max_words)
+    metadata: dict[str, Any] = {
+        "embeddings_path": str(args.embeddings),
+        "dictionary_path": str(args.dictionary) if args.dictionary is not None else None,
+    }
     if args.dictionary is not None:
         dictionary = WordDictionary.from_text_file(
             args.dictionary,
             min_length=args.min_word_length,
             max_length=args.max_word_length,
         )
-        store = dictionary.filter_store(store)
-    run_server(store=store, host=args.host, port=args.port)
+        store = CandidateStore.from_text_file(
+            args.embeddings,
+            lowercase_ids=True,
+            max_items=args.max_words,
+            allowed_ids=dictionary.words,
+        )
+        metadata["dictionary_size"] = len(dictionary)
+        metadata["dictionary_overlap"] = len(store.candidates)
+        metadata["dictionary_coverage"] = len(store.candidates) / len(dictionary) if len(dictionary) else 0.0
+    else:
+        store = CandidateStore.from_text_file(args.embeddings, lowercase_ids=True, max_items=args.max_words)
+    run_server(store=store, host=args.host, port=args.port, metadata=metadata)
 
 
 async def _request_payload(request: Request) -> dict[str, Any]:
@@ -368,6 +384,12 @@ INDEX_HTML = r"""<!doctype html>
       display: grid;
       gap: 10px;
     }
+    .source-note {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
     .chips {
       display: flex;
       flex-wrap: wrap;
@@ -402,6 +424,7 @@ INDEX_HTML = r"""<!doctype html>
         <div class="stat"><b id="constraint-count">0</b><span>Constraints</span></div>
         <div class="stat"><b id="best-rank">-</b><span>Best rank</span></div>
       </div>
+      <div class="source-note" id="source-note"></div>
 
       <form id="observe-form">
         <h2>Feedback</h2>
@@ -482,6 +505,7 @@ INDEX_HTML = r"""<!doctype html>
       $("observation-count").textContent = state.observation_count;
       $("constraint-count").textContent = state.constraint_count;
       $("best-rank").textContent = state.best ? Number(state.best.rank).toFixed(0) : "-";
+      renderSource(state.metadata || {});
 
       const suggestions = $("suggestions");
       suggestions.innerHTML = "";
@@ -506,6 +530,17 @@ INDEX_HTML = r"""<!doctype html>
         history.appendChild(row);
       });
       $("history-empty").style.display = state.observations.length ? "none" : "block";
+    }
+
+    function renderSource(metadata) {
+      const parts = [];
+      if (metadata.embeddings_path) parts.push(`Embeddings: ${metadata.embeddings_path}`);
+      if (metadata.dictionary_path) {
+        const overlap = metadata.dictionary_overlap ?? "-";
+        const size = metadata.dictionary_size ?? "-";
+        parts.push(`Dictionary: ${overlap}/${size} words loaded`);
+      }
+      $("source-note").textContent = parts.join(" · ");
     }
 
     function renderSimulation(result) {

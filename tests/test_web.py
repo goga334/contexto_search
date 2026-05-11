@@ -16,11 +16,12 @@ FIXTURE = Path(__file__).parent / "fixtures" / "tiny_words.vec"
 
 def test_web_session_observes_and_suggests() -> None:
     store = CandidateStore.from_text_file(FIXTURE)
-    session = WebSession.from_store(store)
+    session = WebSession.from_store(store, metadata={"dictionary_overlap": 12})
 
     state = session.observe("water", 3)
 
     assert state["observation_count"] == 1
+    assert state["metadata"]["dictionary_overlap"] == 12
     assert state["best"]["candidate_id"] == "water"
     assert state["suggestions"]
 

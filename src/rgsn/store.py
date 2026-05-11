@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Container
 
 from rgsn.types import Candidate
 from rgsn.vectors import Vector, normalize
@@ -51,6 +51,7 @@ class CandidateStore:
         encoding: str = "utf-8",
         normalize_embeddings: bool = True,
         lowercase_ids: bool = False,
+        allowed_ids: Container[str] | None = None,
         skip_header: bool | None = None,
         max_items: int | None = None,
     ) -> CandidateStore:
@@ -69,12 +70,12 @@ class CandidateStore:
             inferred_skip = _looks_like_vector_header(first_line)
             should_skip_first = inferred_skip if skip_header is None else skip_header
             if not should_skip_first:
-                _parse_vector_line(first_line, embeddings, lowercase_ids=lowercase_ids)
+                _parse_vector_line(first_line, embeddings, lowercase_ids=lowercase_ids, allowed_ids=allowed_ids)
 
             for line in handle:
                 if max_items is not None and len(embeddings) >= max_items:
                     break
-                _parse_vector_line(line, embeddings, lowercase_ids=lowercase_ids)
+                _parse_vector_line(line, embeddings, lowercase_ids=lowercase_ids, allowed_ids=allowed_ids)
 
         return cls.from_mapping(embeddings, normalize_embeddings=normalize_embeddings)
 
@@ -114,13 +115,21 @@ def _looks_like_vector_header(line: str) -> bool:
     return all(part.isdigit() for part in parts)
 
 
-def _parse_vector_line(line: str, embeddings: dict[str, Vector], *, lowercase_ids: bool) -> None:
+def _parse_vector_line(
+    line: str,
+    embeddings: dict[str, Vector],
+    *,
+    lowercase_ids: bool,
+    allowed_ids: Container[str] | None,
+) -> None:
     parts = line.strip().split()
     if not parts:
         return
     if len(parts) < 2:
         raise ValueError(f"Invalid vector line: {line!r}")
     item_id = parts[0].lower() if lowercase_ids else parts[0]
+    if allowed_ids is not None and item_id not in allowed_ids:
+        return
     try:
         embeddings[item_id] = [float(value) for value in parts[1:]]
     except ValueError as exc:

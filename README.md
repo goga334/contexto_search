@@ -64,6 +64,8 @@ solver = ContextoSolver.from_embedding_file(
 )
 ```
 
+When a dictionary is provided, the embedding loader streams only matching words from the vector file. This is the intended path for large vocabularies: the candidate count is the dictionary/embedding overlap, not the raw dictionary size.
+
 ## Local Web UI
 
 ```bash
@@ -78,3 +80,9 @@ python -m rgsn.web --embeddings tests/fixtures/tiny_words.vec --port 8765
 ```
 
 Open `http://127.0.0.1:8765`.
+
+For a real-sized run, replace the fixture paths:
+
+```bash
+contexto-ui --embeddings data/wiki-news.vec --dictionary data/allowed_words.txt --port 8765
+```
