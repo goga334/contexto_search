@@ -1,0 +1,10 @@
+[project]
+name = "contexto-search"
+version = "0.1.0"
+description = "Rank-guided semantic search experiments with weak ordinal feedback."
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
