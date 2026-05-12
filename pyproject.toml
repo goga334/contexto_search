@@ -5,12 +5,15 @@ description = "Rank-guided semantic search experiments with weak ordinal feedbac
 requires-python = ">=3.10"
 dependencies = [
     "fastapi>=0.110",
+    "matplotlib>=3.8",
     "numpy>=2.0",
     "uvicorn>=0.27",
 ]
 
 [project.scripts]
 contexto-ui = "rgsn.web:main"
+rgsn-benchmark = "rgsn.benchmark:main"
+rgsn-report = "rgsn.report:main"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

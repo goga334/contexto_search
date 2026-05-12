@@ -77,6 +77,19 @@ The implementation is split into reusable layers:
 - `ContextoSolver`: word-game wrapper over the generic solver
 - `rgsn.web`: FastAPI web UI for manual and simulated sessions
 - `NumpyCandidateIndex`: vectorized scorer/ranker for large candidate stores
+- `SearchStrategy`: common protocol for comparable search methods
+- `BenchmarkRunner`: shared-protocol multi-strategy evaluation and export
+- `metrics.py`: success, best-rank, normalized AUC, and per-step curve metrics
+- `report.py`: plot/report generation from benchmark JSON
+
+Current strategies:
+
+- random search
+- nearest neighbor of the best observed candidate
+- centroid of the best observed candidates
+- Rocchio-style positive/negative feedback
+- pairwise latent direction
+- pairwise acquisition with direction, anchor, redundancy, and exploration
 
 ---
 

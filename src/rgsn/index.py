@@ -103,6 +103,53 @@ class NumpyCandidateIndex:
             if np.isfinite(scores[index])
         ]
 
+    def score_by_vector(
+        self,
+        *,
+        vector: Vector,
+        observations: list[FeedbackObservation],
+        k: int,
+        component_name: str = "similarity",
+        include_seen: bool = False,
+    ) -> list[ScoredCandidate]:
+        if k <= 0:
+            raise ValueError("k must be positive")
+        query = np.asarray(vector, dtype=np.float32)
+        query_norm = float(np.linalg.norm(query))
+        if query_norm == 0.0:
+            return []
+        query = query / query_norm
+        scores = self.matrix @ query
+        if observations and not include_seen:
+            observed_rows = [self.id_to_row[item.candidate_id] for item in observations]
+            scores[observed_rows] = -np.inf
+        top_indices = self._top_indices(scores, k)
+        return [
+            ScoredCandidate(
+                candidate=self.store.candidates[self.ids[index]],
+                score=float(scores[index]),
+                components={component_name: float(scores[index])},
+            )
+            for index in top_indices
+            if np.isfinite(scores[index])
+        ]
+
+    def score_by_ids(
+        self,
+        *,
+        candidate_ids: list[str],
+        scores: list[float],
+        component_name: str,
+    ) -> list[ScoredCandidate]:
+        return [
+            ScoredCandidate(
+                candidate=self.store.candidates[candidate_id],
+                score=float(score),
+                components={component_name: float(score)},
+            )
+            for candidate_id, score in zip(candidate_ids, scores)
+        ]
+
     def rank_oracle(self, target_id: str) -> tuple[list[str], dict[str, int]]:
         target_row = self.id_to_row[target_id]
         similarities = self.matrix @ self.matrix[target_row]

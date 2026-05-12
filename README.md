@@ -45,6 +45,16 @@ The word solver is a thin wrapper over the reusable vector search components:
 - `WeakFeedbackSolver`: observes weak ordinal feedback and proposes candidates.
 - `SimilarityRankOracle`: simulates hidden-target games for offline evaluation.
 - `EvaluationRunner`: runs many hidden-target simulations and aggregates metrics.
+- `SearchStrategy`: shared strategy interface for comparable weak-feedback methods.
+
+Implemented strategy baselines:
+
+- `RandomStrategy`
+- `BestNeighborStrategy`
+- `CentroidStrategy`
+- `RocchioStrategy`
+- `PairwiseDirectionStrategy`
+- `PairwiseAcquisitionStrategy`
 
 ```python
 summary = solver.evaluate(
@@ -92,4 +102,32 @@ One practical GloVe setup:
 ```bash
 python scripts/build_alpha_dictionary.py data/glove-wiki-gigaword-50.gz data/glove_ascii_words.txt
 contexto-ui --embeddings data/glove-wiki-gigaword-50.gz --dictionary data/glove_ascii_words.txt --port 8765
+```
+
+## Benchmarks
+
+Run a tiny reproducible smoke benchmark:
+
+```bash
+python -m rgsn.benchmark \
+  --embeddings tests/fixtures/tiny_words.vec \
+  --targets tests/fixtures/tiny_targets.txt \
+  --strategies random,best_neighbor,centroid,rocchio,pairwise_direction,pairwise_acquisition \
+  --seed-words road,tree,water \
+  --budget 8 \
+  --random-seed 42 \
+  --out-json results/tiny_benchmark.json \
+  --out-summary-csv results/tiny_summary.csv \
+  --out-traces-csv results/tiny_traces.csv
+```
+
+Summary exports include success rate, final best-rank statistics, normalized AUC, and per-step mean/median best-rank curves.
+
+Generate plots and a Markdown summary from a benchmark JSON:
+
+```bash
+python -m rgsn.report \
+  --benchmark-json results/tiny_benchmark.json \
+  --output-dir results/plots \
+  --title "Tiny RGSN Benchmark"
 ```
