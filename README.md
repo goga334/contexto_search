@@ -131,3 +131,31 @@ python -m rgsn.report \
   --output-dir results/plots \
   --title "Tiny RGSN Benchmark"
 ```
+
+Run the larger GloVe benchmark used for paper-style comparisons:
+
+```bash
+python -m rgsn.benchmark \
+  --embeddings data/glove-wiki-gigaword-50.gz \
+  --dictionary data/glove_ascii_words.txt \
+  --targets benchmarks/targets/glove60.txt \
+  --strategies random,best_neighbor,centroid,rocchio,pairwise_direction,pairwise_acquisition \
+  --seed-words animal,tool,nature,emotion,object \
+  --budget 25 \
+  --stop-rank 25 \
+  --repeats 3 \
+  --random-seed 42 \
+  --out-json results/glove60_benchmark.json \
+  --out-summary-csv results/glove60_summary.csv \
+  --out-traces-csv results/glove60_traces.csv
+```
+
+```bash
+python -m rgsn.report \
+  --benchmark-json results/glove60_benchmark.json \
+  --output-dir results/glove60_plots \
+  --title "GloVe-60 Weak Feedback Benchmark"
+```
+
+Reference GloVe-60 plots and the generated summary are committed under
+`docs/figures/glove60_benchmark/`.
