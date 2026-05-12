@@ -13,12 +13,14 @@ class SimilarityRankOracle:
 
     store: CandidateStore
     target_id: str
+    index: NumpyCandidateIndex | None = field(default=None, repr=False)
     _ranking: list[str] = field(init=False, repr=False)
     _ranks: dict[str, int] = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
         self.store.get(self.target_id)
-        self._ranking, self._ranks = NumpyCandidateIndex.from_store(self.store).rank_oracle(self.target_id)
+        index = self.index if self.index is not None else NumpyCandidateIndex.from_store(self.store)
+        self._ranking, self._ranks = index.rank_oracle(self.target_id)
 
     @property
     def target(self) -> Candidate:

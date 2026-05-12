@@ -10,6 +10,7 @@ from statistics import mean, median
 from typing import Any
 
 from rgsn.contexto import ContextoSolver
+from rgsn.index import NumpyCandidateIndex
 from rgsn.metrics import (
     normalized_best_rank_auc,
     per_step_mean_best_rank,
@@ -165,6 +166,7 @@ class BenchmarkResult:
 class BenchmarkRunner:
     def __init__(self, store: CandidateStore) -> None:
         self.store = store
+        self.index = NumpyCandidateIndex.from_store(store)
 
     def run(
         self,
@@ -196,18 +198,26 @@ class BenchmarkRunner:
         for seed_id in base_seed_ids:
             self.store.get(seed_id)
 
+        for strategy in strategy_list:
+            if hasattr(strategy, "index"):
+                setattr(strategy, "index", self.index)
+
+        oracles = {
+            target_id: SimilarityRankOracle(self.store, target_id, index=self.index)
+            for target_id in targets
+        }
+
         traces: list[BenchmarkTrace] = []
         for strategy in strategy_list:
             for run_index in range(repeats):
                 run_seed = None if random_seed is None else random_seed + run_index
                 for target_id in targets:
-                    oracle = SimilarityRankOracle(self.store, target_id)
                     target_seed_ids = _seed_ids_for_target(base_seed_ids, target_id)
                     strategy.reset(self.store, random_seed=run_seed)
                     traces.append(
                         self._run_one(
                             strategy=strategy,
-                            oracle=oracle,
+                            oracle=oracles[target_id],
                             target_id=target_id,
                             run_index=run_index,
                             budget=budget,

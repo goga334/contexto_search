@@ -37,7 +37,8 @@ class StrategyBase:
     rng: random.Random = field(default_factory=random.Random, init=False, repr=False)
 
     def reset(self, store: CandidateStore, *, random_seed: int | None = None) -> None:
-        self.index = NumpyCandidateIndex.from_store(store)
+        if self.index is None or self.index.store is not store:
+            self.index = NumpyCandidateIndex.from_store(store)
         self.rng = random.Random(random_seed)
 
     def _index(self, store: CandidateStore) -> NumpyCandidateIndex:
